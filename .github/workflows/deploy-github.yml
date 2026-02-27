@@ -46,7 +46,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v5.1.1
         with:
           role-to-assume: ${{ env.MAROON_OIDC_ROLE }}
-          aws-region: us-west-2
+          aws-region: us-east-1
 
       - name: Setup Terraform CLI
         uses: hashicorp/setup-terraform@v3.1.2
@@ -61,7 +61,7 @@ jobs:
           terraform init -reconfigure \
             -backend-config="bucket=${{ env.MAROON_STATE_BUCKET }}" \
             -backend-config="key=${{ env.MAROON_STATE_KEY }}" \
-            -backend-config="region=us-west-2" \
+            -backend-config="region=us-east-1" \
             -backend-config="encrypt=true"
 
       - name: Terraform plan (save binary plan)
@@ -117,7 +117,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v5.1.1
         with:
           role-to-assume: ${{ env.MAROON_OIDC_ROLE }}
-          aws-region: us-west-2
+          aws-region: us-east-1
           
       - name: Setup Terraform CLI
         uses: hashicorp/setup-terraform@v3.1.2
@@ -127,7 +127,7 @@ jobs:
           terraform init -reconfigure \
             -backend-config="bucket=${{ env.MAROON_STATE_BUCKET }}" \
             -backend-config="key=${{ env.MAROON_STATE_KEY }}" \
-            -backend-config="region=us-west-2" \
+            -backend-config="region=us-east-1" \
             -backend-config="encrypt=true"
 
       - name: Terraform apply
