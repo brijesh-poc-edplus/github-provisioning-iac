@@ -2,3 +2,4 @@ name,visibility,description,frontend,aws-nonprod,aws-nonprod-name,aws-prod,aws-p
 test-repo-1,public,test-repo-one,false,123456789,test-nonprod,123456689,test-prod,0,EPBESOL,test-portfolio
 test-repo-2,public,test-repo-two,true,123456789,test-nonprod,123456689,test-prod,0,EPBESOL,test-portfolio
 test-repo-3,public,test-repo-three,true,123456789,test-nonprod,123456689,test-prod,0,EPBESOL,test-portfolio
+test-repo-4,public,test-repo-four,true,123456789,test-nonprod,123456689,test-prod,0,EPBESOL,test-portfolio
