@@ -90,7 +90,7 @@ locals {
         for f in fileset("${path.module}/infra-setup", "**/*") : {
           key     = "${rb.repo}:${rb.branch}:${f}"
           repo    = rb.repo
-          branch  = rb.branch
+          frontend = rb.frontend
           file    = "infra-setup/${f}"
           content = file("${path.module}/infra-setup/${f}")
         }
@@ -255,6 +255,20 @@ resource "github_repository_file" "html_file" {
   }
 }
 
+resource "github_repository_file" "infra_setup" {
+  for_each            = { for k, v in local.tf_files : k => v if v.frontend == true}
+  repository          = each.value.repo
+  branch              = "main"
+  file                = each.value.file
+  content             = each.value.content
+  overwrite_on_create = true
+  depends_on          = [github_repository.repos]
+  lifecycle {
+    ignore_changes = [content]
+    prevent_destroy = true
+  }
+}
+
 # ---------------------------
 # Null resource join: ensure main files exist before creating branches
 # ---------------------------
@@ -357,20 +371,6 @@ resource "github_repository_file" "codeowners" {
   content             = each.value
   overwrite_on_create = true
   depends_on          = [github_branch.default, github_branch.custom]
-}
-
-resource "github_repository_file" "infra_setup" {
-  for_each            = local.tf_files
-  repository          = each.value.repo
-  branch              = each.value.branch
-  file                = each.value.file
-  content             = each.value.content
-  overwrite_on_create = true
-  depends_on          = [github_repository.repos]
-  lifecycle {
-    ignore_changes = [content]
-    prevent_destroy = true
-  }
 }
 
 # ---------------------------
