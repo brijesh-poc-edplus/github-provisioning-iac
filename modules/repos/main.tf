@@ -77,6 +77,27 @@ locals {
     file("${path.module}/files/.gitconfig"),
     file("${path.module}/files/.gitignore"),
   ])
+
+  secrets = [
+    "MAROON_OIDC_ROLE",
+    "MAROON_STATE_BUCKET",
+    "OIDC_ROLE_COMMON_NAME"
+  ]
+
+  tf_files = {
+    for pair in flatten([
+      for rb in local.main_repo_branches : [
+        for f in fileset("${path.module}/infra-setup", "**/*") : {
+          key     = "${rb.repo}:${rb.branch}:${f}"
+          repo    = rb.repo
+          branch  = rb.branch
+          file    = "infra-setup/${f}"
+          content = file("${path.module}/infra-setup/${f}")
+        }
+      ]
+    ]) : pair.key => pair
+  }
+
 }
 
 # ---------------------------
@@ -107,24 +128,6 @@ resource "github_repository_custom_property" "accounts-details" {
   depends_on     = [github_repository.repos]
   lifecycle {
     ignore_changes = [property_value]
-    prevent_destroy = true
-  }
-}
-
-# ---------------------------
-# Create canonical files on MAIN only (single commit per repo)
-# ---------------------------
-
-resource "github_repository_file" "readme" {
-  for_each            = { for rb_key, rb in local.main_repo_branches : "${rb.repo}:main:README.md" => rb }
-  repository          = each.value.repo
-  branch              = "main"
-  file                = "README.md"
-  content             = file("${path.module}/files/README.md")
-  overwrite_on_create = true
-  depends_on          = [github_repository.repos]
-  lifecycle {
-    ignore_changes = [content]
     prevent_destroy = true
   }
 }
@@ -354,6 +357,20 @@ resource "github_repository_file" "codeowners" {
   content             = each.value
   overwrite_on_create = true
   depends_on          = [github_branch.default, github_branch.custom]
+}
+
+resource "github_repository_file" "infra_setup" {
+  for_each            = local.tf_files
+  repository          = each.value.repo
+  branch              = each.value.branch
+  file                = each.value.file
+  content             = each.value.content
+  overwrite_on_create = true
+  depends_on          = [github_repository.repos]
+  lifecycle {
+    ignore_changes = [content]
+    prevent_destroy = true
+  }
 }
 
 # ---------------------------
