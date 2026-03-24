@@ -128,7 +128,23 @@ resource "github_repository_custom_property" "accounts-details" {
   depends_on     = [github_repository.repos]
   lifecycle {
     ignore_changes = [property_value]
-    prevent_destroy = true
+  }
+}
+
+# ---------------------------
+# Create canonical files on MAIN only (single commit per repo)
+# ---------------------------
+
+resource "github_repository_file" "readme" {
+  for_each            = { for rb_key, rb in local.main_repo_branches : "${rb.repo}:main:README.md" => rb }
+  repository          = each.value.repo
+  branch              = "main"
+  file                = "README.md"
+  content             = file("${path.module}/files/README.md")
+  overwrite_on_create = true
+  depends_on          = [github_repository.repos]
+  lifecycle {
+    ignore_changes = [content]
   }
 }
 
