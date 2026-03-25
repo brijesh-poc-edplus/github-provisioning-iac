@@ -1,0 +1,152 @@
+name: deploy-infra
+
+on:
+  workflow_dispatch:
+    inputs:
+      aws_account_id:
+        description: 'AWS account ID'
+        required: true
+      s3_bucket_name:
+        description: 'S3 bucket name'
+        required: true
+      enable_spa_redirect:
+        description: 'Enable SPA redirect (true/false)'
+        required: true
+        type: choice
+        options: 
+          - true
+          - false
+      issue_custom_domain_cert:
+        description: 'Issue custom domain certificate (true/false)'
+        required: true
+        type: choice
+        options:
+          - true
+          - false
+      custom_domain_name:
+        description: 'Custom domain name'
+        required:  false
+        default: ''
+          
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: us-west-2
+  MAROON_OIDC_ROLE: ${{ secrets.MAROON_OIDC_ROLE }}       
+  MAROON_STATE_BUCKET: ${{ secrets.MAROON_STATE_BUCKET }}
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    outputs:
+      state_key: ${{ steps.compose.outputs.STATE_KEY }}
+      plan_artifact: ${{ steps.upload.outputs.name }}
+      role_arn: ${{ steps.compose-role.outputs.role_arn }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.1
+
+      - name: Validate custom domain name input if certificate is requested
+        run: |
+          regex="^(\*\.)?([a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\.)+[A-Za-z]{2,}$"
+          DOMAIN="${{ github.event.inputs.custom_domain_name }}"
+          if [ "${{ github.event.inputs.issue_custom_domain_cert }}" = "true" ] && ! [[ "$DOMAIN" =~ $regex ]]; then
+            echo "Error: Invalid custom domain name provided."
+            exit 1
+          fi
+
+      - name: Assume maroon role (OIDC) for backend access
+        uses: aws-actions/configure-aws-credentials@v5.1.1
+        with:
+          role-to-assume: ${{ env.MAROON_OIDC_ROLE }}
+          aws-region: us-west-2
+
+      - name: Compose backend key
+        id: compose
+        run: |
+          KEY="${{ github.event.inputs.aws_account_id }}-${{ github.event.inputs.s3_bucket_name }}/terraform.tfstate"
+          echo "STATE_KEY=${KEY}" >> $GITHUB_OUTPUT
+
+      - name: Compose OIDC role ARN for target account
+        id: compose-role
+        run: |
+          ROLE_ARN="arn:aws:iam::${{ github.event.inputs.aws_account_id}}:role/${{ secrets.OIDC_ROLE_COMMON_NAME }}"
+          echo "role_arn=${ROLE_ARN}" >> $GITHUB_OUTPUT
+
+      - name: Setup Terraform CLI
+        uses: hashicorp/setup-terraform@v3.1.2
+
+      - name: Terraform init
+        env:
+          TF_VAR_bucket_name: ${{ github.event.inputs.s3_bucket_name }}
+          TF_VAR_enable_spa_redirect: ${{ github.event.inputs.enable_spa_redirect }}
+        run: |
+          terraform init -reconfigure \
+            -backend-config="bucket=${{ env.MAROON_STATE_BUCKET }}" \
+            -backend-config="key=${{ steps.compose.outputs.STATE_KEY }}" \
+            -backend-config="region=us-west-2" \
+            -backend-config="encrypt=true"
+
+      - name: Terraform plan (save binary plan)
+        env:
+          TF_VAR_bucket_name: ${{ github.event.inputs.s3_bucket_name }}
+          TF_VAR_enable_spa_redirect: ${{ github.event.inputs.enable_spa_redirect }}
+          TF_VAR_role_arn: ${{ steps.compose-role.outputs.role_arn }}
+          TF_VAR_issue_custom_domain_cert: ${{ github.event.inputs.issue_custom_domain_cert }}
+          TF_VAR_custom_domain_name: ${{ github.event.inputs.custom_domain_name }}
+        run: terraform plan -out=tfplan
+
+      - name: Save plan for review
+        run: terraform show tfplan
+
+      - name: Upload plan artifact
+        id: upload
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: tfplan
+          path: tfplan
+
+  apply:
+    name: Apply
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: admin
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.1
+
+      - name: Download plan artifact
+        uses: actions/download-artifact@v7.0.0
+        with:
+          name: tfplan
+          path: .
+
+      - name: Assume maroon role (OIDC) for backend access
+        uses: aws-actions/configure-aws-credentials@v5.1.1
+        with:
+          role-to-assume: ${{ env.MAROON_OIDC_ROLE }}
+          aws-region: us-west-2
+          
+      - name: Setup Terraform CLI
+        uses: hashicorp/setup-terraform@v3.1.2
+
+      - name: Terraform init
+        run: |
+          terraform init -reconfigure \
+            -backend-config="bucket=${{ env.MAROON_STATE_BUCKET }}" \
+            -backend-config="key=${{ needs.plan.outputs.state_key }}" \
+            -backend-config="region=us-west-2" \
+            -backend-config="encrypt=true"
+
+      - name: Terraform apply
+        env:
+          TF_VAR_bucket_name: ${{ github.event.inputs.s3_bucket_name }}
+          TF_VAR_enable_spa_redirect: ${{ github.event.inputs.enable_spa_redirect }}
+          TF_VAR_role_arn: ${{ needs.plan.outputs.role_arn }}
+          TF_VAR_issue_custom_domain_cert: ${{ github.event.inputs.issue_custom_domain_cert }}
+          TF_VAR_custom_domain_name: ${{ github.event.inputs.custom_domain_name }}
+        run: terraform apply -input=false tfplan

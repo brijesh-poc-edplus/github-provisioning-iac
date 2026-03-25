@@ -439,20 +439,34 @@ resource "github_branch_protection_v3" "default_branch_protection" {
 resource "github_actions_secret" "maroon_oidc_role" {
   for_each           = { for r in var.repos : r.name => r }
   secret_name     = "MAROON_OIDC_ROLE"
-  repository      = each.value.repo
+  repository      = each.value.name
   plaintext_value = var.maroon_oidc_role
 }
 
 resource "github_actions_secret" "maroon_state_bucket" {
   for_each           = { for r in var.repos : r.name => r }
   secret_name     = "MAROON_STATE_BUCKET"
-  repository      = each.value.repo
+  repository      = each.value.name
   plaintext_value = var.maroon_state_bucket
 }
 
 resource "github_actions_secret" "oidc_role_common_name" {
   for_each           = { for r in var.repos : r.name => r }
   secret_name     = "OIDC_ROLE_COMMON_NAME"
-  repository      = each.value.repo
+  repository      = each.value.name
   plaintext_value = var.oidc_role_common_name
+}
+
+resource "github_repository_file" "infra_cicd" {
+  for_each         = { for rb_key, rb in local.default_repo_branches : rb.repo => rb if rb.frontend == true }
+  repository       = each.value.repo
+  branch              = each.value.branch
+  file                = ".github/workflows/deploy-infra.yml"
+  content             = file("${path.module}/files/deploy-infra.yml")
+  overwrite_on_create = true
+  depends_on          = [github_repository.repos, github_branch.default]
+  lifecycle {
+    ignore_changes = [content]
+    prevent_destroy = true
+  }
 }
