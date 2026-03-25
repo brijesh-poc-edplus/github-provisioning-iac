@@ -436,21 +436,21 @@ resource "github_branch_protection_v3" "default_branch_protection" {
   depends_on = [github_branch.default, github_branch.custom]
 }
 
-resource "github_secret" "maroon_oidc_role" {
+resource "github_actions_secret" "maroon_oidc_role" {
   for_each = var.repos
   secret_name     = "MAROON_OIDC_ROLE"
   repository      = each.value.repo
   plaintext_value = var.maroon_oidc_role
 }
 
-resource "github_secret" "maroon_state_bucket" {
+resource "github_actions_secret" "maroon_state_bucket" {
   for_each = var.repos
   secret_name     = "MAROON_STATE_BUCKET"
   repository      = each.value.repo
   plaintext_value = var.maroon_state_bucket
 }
 
-resource "github_secret" "oidc_role_common_name" {
+resource "github_actions_secret" "oidc_role_common_name" {
   for_each = var.repos
   secret_name     = "OIDC_ROLE_COMMON_NAME"
   repository      = each.value.repo
