@@ -441,6 +441,10 @@ resource "github_actions_secret" "maroon_oidc_role" {
   secret_name     = "MAROON_OIDC_ROLE"
   repository      = each.value.name
   plaintext_value = var.maroon_oidc_role
+  lifecycle {
+    ignore_changes = [content]
+    prevent_destroy = true
+  }
 }
 
 resource "github_actions_secret" "maroon_state_bucket" {
@@ -448,6 +452,10 @@ resource "github_actions_secret" "maroon_state_bucket" {
   secret_name     = "MAROON_STATE_BUCKET"
   repository      = each.value.name
   plaintext_value = var.maroon_state_bucket
+  lifecycle {
+    ignore_changes = [content]
+    prevent_destroy = true
+  }
 }
 
 resource "github_actions_secret" "oidc_role_common_name" {
@@ -455,6 +463,10 @@ resource "github_actions_secret" "oidc_role_common_name" {
   secret_name     = "OIDC_ROLE_COMMON_NAME"
   repository      = each.value.name
   plaintext_value = var.oidc_role_common_name
+  lifecycle {
+    ignore_changes = [content]
+    prevent_destroy = true
+  }
 }
 
 resource "github_repository_file" "infra_cicd" {
