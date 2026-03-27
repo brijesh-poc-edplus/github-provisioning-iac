@@ -112,7 +112,7 @@ resource "github_repository" "repos" {
   auto_init          = true   
   lifecycle {
     ignore_changes = all
-    prevent_destroy = true
+    
   }
 }
 
@@ -128,7 +128,7 @@ resource "github_repository_custom_property" "accounts-details" {
   depends_on     = [github_repository.repos]
   lifecycle {
     ignore_changes = all
-    prevent_destroy = true
+    
   }
 }
 
@@ -159,7 +159,7 @@ resource "github_repository_file" "prettier_config" {
   depends_on          = [github_repository.repos]
   lifecycle {
     ignore_changes = [content]
-    prevent_destroy = true
+    
   }
 }
 
@@ -173,7 +173,7 @@ resource "github_repository_file" "lintstagedrc" {
   depends_on          = [github_repository.repos]
   lifecycle {
     ignore_changes = [content]
-    prevent_destroy = true
+    
   }
 }
 
@@ -187,7 +187,7 @@ resource "github_repository_file" "pre_commit" {
   depends_on          = [github_repository.repos]
   lifecycle {
     ignore_changes = [content]
-    prevent_destroy = true
+    
   }
 }
 
@@ -201,7 +201,7 @@ resource "github_repository_file" "prepare_commit_msg" {
   depends_on          = [github_repository.repos]
   lifecycle {
     ignore_changes = [content]
-    prevent_destroy = true
+    
   }
 }
 
@@ -215,7 +215,7 @@ resource "github_repository_file" "package_json" {
   depends_on          = [github_repository.repos]
   lifecycle {
     ignore_changes = [content]
-    prevent_destroy = true
+    
   }
 }
 
@@ -229,7 +229,7 @@ resource "github_repository_file" "gitignore" {
   depends_on          = [github_repository.repos]
   lifecycle {
     ignore_changes = [content]
-    prevent_destroy = true
+    
   }
 }
 
@@ -243,7 +243,7 @@ resource "github_repository_file" "gitconfig" {
   depends_on          = [github_repository.repos]
   lifecycle {
     ignore_changes = [content]
-    prevent_destroy = true
+    
   }
 }
 
@@ -268,7 +268,7 @@ resource "github_repository_file" "html_file" {
   depends_on          = [github_repository.repos]
   lifecycle {
     ignore_changes = [content]
-    prevent_destroy = true
+    
   }
 }
 
@@ -282,7 +282,7 @@ resource "github_repository_file" "infra_setup" {
   depends_on          = [github_repository.repos]
   lifecycle {
     ignore_changes = [content]
-    prevent_destroy = true
+    
   }
 }
 
@@ -317,7 +317,7 @@ resource "github_branch" "default" {
   depends_on    = [github_repository.repos, null_resource.main_files_ready]
   lifecycle {
     ignore_changes = all
-    prevent_destroy = true
+    
   }
 }
 
@@ -444,7 +444,7 @@ resource "github_actions_secret" "maroon_oidc_role" {
   plaintext_value = var.maroon_oidc_role
   lifecycle {
     ignore_changes = all
-    prevent_destroy = true
+    
   }
 }
 
@@ -455,7 +455,7 @@ resource "github_actions_secret" "maroon_state_bucket" {
   plaintext_value = var.maroon_state_bucket
   lifecycle {
     ignore_changes = all
-    prevent_destroy = true
+    
   }
 }
 
@@ -466,7 +466,7 @@ resource "github_actions_secret" "oidc_role_common_name" {
   plaintext_value = var.oidc_role_common_name
   lifecycle {
     ignore_changes = all
-    prevent_destroy = true
+    
   }
 }
 
@@ -480,6 +480,6 @@ resource "github_repository_file" "infra_cicd" {
   depends_on          = [github_repository.repos, github_branch.default]
   lifecycle {
     ignore_changes = [content]
-    prevent_destroy = true
+    
   }
 }
