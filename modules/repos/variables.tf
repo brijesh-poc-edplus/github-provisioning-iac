@@ -4,6 +4,7 @@ variable "repos" {
     visibility  = string
     description = string
     frontend    = optional(bool, false)
+    iac_setup   = optional(bool, false)
     aws-nonprod      = optional(string, "")
     aws-nonprod-name = optional(string, "")
     aws-prod         = optional(string, "")
