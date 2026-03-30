@@ -124,7 +124,7 @@ jobs:
     defaults:
       run:
         working-directory: ./infra-setup
-    environment: admin
+    environment: edpl-admins
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.1

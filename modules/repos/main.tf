@@ -487,3 +487,12 @@ resource "github_repository_file" "infra_cicd" {
     prevent_destroy = true
   }
 }
+
+resource "github_repository_environment" "edpl-admins" {
+  for_each   = { for r in var.repos : r.name => r if r.iac_setup == true }
+  repository = each.value.name
+  environment = "edpl-admins"
+  reviewers {
+    teams = ["edpl-admins"]
+  }
+}
