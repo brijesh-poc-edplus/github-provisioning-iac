@@ -466,7 +466,6 @@ resource "github_actions_secret" "oidc_role_common_name" {
   plaintext_value = var.oidc_role_common_name
   lifecycle {
     ignore_changes = all
-    prevent_destroy = true
   }
   depends_on = [ github_repository.repos, github_branch.default ]
 }
