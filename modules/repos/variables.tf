@@ -51,13 +51,13 @@ variable "codeowners_rules" {
   }))
 }
 
-variable "maroon_oidc_role" {
-  description = "ARN of the OIDC role for Maroon"
+variable "infra_state_bucket" {
+  description = "S3 bucket name for IAC state management"
   type        = string
 }
 
-variable "maroon_state_bucket" {
-  description = "S3 bucket name for Maroon state storage"
+variable "infra_oidc_role" {
+  description = "ARN of the OIDC role for IAC"
   type        = string
 }
 

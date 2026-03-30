@@ -12,6 +12,7 @@ locals {
           repo     = repo.name
           branch   = b
           frontend = repo.frontend
+          iac_setup = repo.iac_setup
         }
       ]
     ]) : "${rb.repo}:${rb.branch}" => rb
@@ -91,6 +92,7 @@ locals {
           key     = "${rb.repo}:${rb.branch}:${f}"
           repo    = rb.repo
           frontend = rb.frontend
+          iac_setup = rb.iac_setup
           file    = "infra-setup/${f}"
           content = file("${path.module}/infra-setup/${f}")
         }
@@ -272,7 +274,7 @@ resource "github_repository_file" "html_file" {
 }
 
 resource "github_repository_file" "infra_setup" {
-  for_each            = { for k, v in local.tf_files : k => v if v.frontend == true}
+  for_each            = { for k, v in local.tf_files : k => v if v.iac_setup == true }
   repository          = each.value.repo
   branch              = "main"
   file                = each.value.file
@@ -436,11 +438,11 @@ resource "github_branch_protection_v3" "default_branch_protection" {
   depends_on = [github_branch.default, github_branch.custom]
 }
 
-resource "github_actions_secret" "maroon_oidc_role" {
-  for_each           = { for r in var.repos : r.name => r }
-  secret_name     = "MAROON_OIDC_ROLE"
+resource "github_actions_secret" "infra_oidc_role" {
+  for_each           = { for r in var.repos : r.name => r if r.iac_setup == true }
+  secret_name     = "INFRA_OIDC_ROLE"
   repository      = each.value.name
-  plaintext_value = var.maroon_oidc_role
+  plaintext_value = var.infra_oidc_role
   lifecycle {
     ignore_changes = all
     prevent_destroy = true
@@ -448,11 +450,11 @@ resource "github_actions_secret" "maroon_oidc_role" {
   depends_on = [ github_repository.repos, github_branch.default ]
 }
 
-resource "github_actions_secret" "maroon_state_bucket" {
-  for_each           = { for r in var.repos : r.name => r }
-  secret_name     = "MAROON_STATE_BUCKET"
+resource "github_actions_secret" "infra_state_bucket" {
+  for_each           = { for r in var.repos : r.name => r if r.iac_setup == true }
+  secret_name     = "INFRA_STATE_BUCKET"
   repository      = each.value.name
-  plaintext_value = var.maroon_state_bucket
+  plaintext_value = var.infra_state_bucket
   lifecycle {
     ignore_changes = all
     prevent_destroy = true
@@ -461,7 +463,7 @@ resource "github_actions_secret" "maroon_state_bucket" {
 }
 
 resource "github_actions_secret" "oidc_role_common_name" {
-  for_each           = { for r in var.repos : r.name => r }
+  for_each           = { for r in var.repos : r.name => r if r.iac_setup == true }
   secret_name     = "OIDC_ROLE_COMMON_NAME"
   repository      = each.value.name
   plaintext_value = var.oidc_role_common_name
@@ -473,7 +475,7 @@ resource "github_actions_secret" "oidc_role_common_name" {
 }
 
 resource "github_repository_file" "infra_cicd" {
-  for_each         = { for rb_key, rb in local.default_repo_branches : "${rb.repo}:${rb.branch}" => rb if rb.frontend == true }
+  for_each         = { for rb_key, rb in local.default_repo_branches : "${rb.repo}:${rb.branch}" => rb if rb.iac_setup == true }
   repository       = each.value.repo
   branch              = each.value.branch
   file                = ".github/workflows/deploy-infra.yml"

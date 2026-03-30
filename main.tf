@@ -37,8 +37,8 @@ module "repos" {
   user_permissions  = local.user_permissions
   team_permissions  = local.team_permissions
   codeowners_rules  = local.codeowners_rules
-  maroon_oidc_role = var.maroon_oidc_role
-  maroon_state_bucket = var.maroon_state_bucket
+  infra_oidc_role = var.infra_oidc_role
+  infra_state_bucket = var.infra_state_bucket
   oidc_role_common_name = var.oidc_role_common_name
   depends_on        = [module.members, module.teams]
 }

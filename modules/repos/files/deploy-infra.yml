@@ -9,6 +9,10 @@ on:
       s3_bucket_name:
         description: 'S3 bucket name'
         required: true
+      region:
+        description: 'AWS region'
+        required: true
+        default: 'us-west-2'
       enable_spa_redirect:
         description: 'Enable SPA redirect (true/false)'
         required: true
@@ -33,7 +37,6 @@ permissions:
   id-token: write
 
 env:
-  AWS_REGION: us-west-2
   MAROON_OIDC_ROLE: ${{ secrets.MAROON_OIDC_ROLE }}       
   MAROON_STATE_BUCKET: ${{ secrets.MAROON_STATE_BUCKET }}
 
@@ -97,6 +100,7 @@ jobs:
       - name: Terraform plan (save binary plan)
         env:
           TF_VAR_bucket_name: ${{ github.event.inputs.s3_bucket_name }}
+          TF_VAR_region: ${{ github.event.inputs.region }}
           TF_VAR_enable_spa_redirect: ${{ github.event.inputs.enable_spa_redirect }}
           TF_VAR_role_arn: ${{ steps.compose-role.outputs.role_arn }}
           TF_VAR_issue_custom_domain_cert: ${{ github.event.inputs.issue_custom_domain_cert }}
@@ -111,7 +115,7 @@ jobs:
         uses: actions/upload-artifact@v6.0.0
         with:
           name: tfplan
-          path: tfplan
+          path: infra-setup/tfplan
 
   apply:
     name: Apply
@@ -129,7 +133,7 @@ jobs:
         uses: actions/download-artifact@v7.0.0
         with:
           name: tfplan
-          path: .
+          path: infra-setup
 
       - name: Assume maroon role (OIDC) for backend access
         uses: aws-actions/configure-aws-credentials@v5.1.1
@@ -151,6 +155,7 @@ jobs:
       - name: Terraform apply
         env:
           TF_VAR_bucket_name: ${{ github.event.inputs.s3_bucket_name }}
+          TF_VAR_region: ${{ github.event.inputs.region }}
           TF_VAR_enable_spa_redirect: ${{ github.event.inputs.enable_spa_redirect }}
           TF_VAR_role_arn: ${{ needs.plan.outputs.role_arn }}
           TF_VAR_issue_custom_domain_cert: ${{ github.event.inputs.issue_custom_domain_cert }}

@@ -11,9 +11,11 @@ env:
   APP_ID: ${{ secrets.APP_ID }}
   APP_PEM_FILE: ${{ secrets.APP_PEM_FILE }}       
   ORGANIZATION: ${{ secrets.ORGANIZATION }}
-  MAROON_OIDC_ROLE: ${{ secrets.MAROON_OIDC_ROLE }}
-  MAROON_STATE_BUCKET: ${{ secrets.MAROON_STATE_BUCKET }}
-  MAROON_STATE_KEY: ${{ secrets.MAROON_STATE_KEY }}
+  GH_OIDC_ROLE: ${{ secrets.GH_OIDC_ROLE }}
+  GH_STATE_BUCKET: ${{ secrets.GH_STATE_BUCKET }}
+  GH_STATE_KEY: ${{ secrets.GH_STATE_KEY }}
+  INFRA_STATE_BUCKET: ${{ secrets.INFRA_STATE_BUCKET}}
+  INFRA_OIDC_ROLE: ${{ secrets.INFRA_OIDC_ROLE }}
   OIDC_ROLE_COMMON_NAME: ${{ secrets.OIDC_ROLE_COMMON_NAME }}
 
 jobs:
@@ -46,7 +48,7 @@ jobs:
       - name: Assume maroon role (OIDC) for backend access
         uses: aws-actions/configure-aws-credentials@v5.1.1
         with:
-          role-to-assume: ${{ env.MAROON_OIDC_ROLE }}
+          role-to-assume: ${{ env.GH_OIDC_ROLE }}
           aws-region: us-east-1
 
       - name: Setup Terraform CLI
@@ -60,8 +62,8 @@ jobs:
           TF_VAR_app_installation_id: ${{ steps.get_installation_id.outputs.INSTALLATION_ID }}
         run: |
           terraform init -reconfigure \
-            -backend-config="bucket=${{ env.MAROON_STATE_BUCKET }}" \
-            -backend-config="key=${{ env.MAROON_STATE_KEY }}" \
+            -backend-config="bucket=${{ env.GH_STATE_BUCKET }}" \
+            -backend-config="key=${{ env.GH_STATE_KEY }}" \
             -backend-config="region=us-east-1" \
             -backend-config="encrypt=true"
 
@@ -71,8 +73,8 @@ jobs:
           TF_VAR_app_id: ${{ env.APP_ID }}
           TF_VAR_app_pem_file: ${{ env.APP_PEM_FILE }}
           TF_VAR_app_installation_id: ${{ steps.get_installation_id.outputs.INSTALLATION_ID }}
-          TF_VAR_maroon_oidc_role: ${{ env.MAROON_OIDC_ROLE }}
-          TF_VAR_maroon_state_bucket: ${{ env.MAROON_STATE_BUCKET }}
+          TF_VAR_infra_state_bucket: ${{ env.INFRA_STATE_BUCKET }}
+          TF_VAR_infra_oidc_role: ${{ env.INFRA_OIDC_ROLE }}
           TF_VAR_oidc_role_common_name: ${{ env.OIDC_ROLE_COMMON_NAME }}
         run: terraform plan -out=tfplan
 
@@ -120,7 +122,7 @@ jobs:
       - name: Assume maroon role (OIDC) for backend access
         uses: aws-actions/configure-aws-credentials@v5.1.1
         with:
-          role-to-assume: ${{ env.MAROON_OIDC_ROLE }}
+          role-to-assume: ${{ env.GH_OIDC_ROLE }}
           aws-region: us-east-1
           
       - name: Setup Terraform CLI
@@ -129,8 +131,8 @@ jobs:
       - name: Terraform init
         run: |
           terraform init -reconfigure \
-            -backend-config="bucket=${{ env.MAROON_STATE_BUCKET }}" \
-            -backend-config="key=${{ env.MAROON_STATE_KEY }}" \
+            -backend-config="bucket=${{ env.GH_STATE_BUCKET }}" \
+            -backend-config="key=${{ env.GH_STATE_KEY }}" \
             -backend-config="region=us-east-1" \
             -backend-config="encrypt=true"
 
@@ -140,7 +142,7 @@ jobs:
           TF_VAR_app_id: ${{ env.APP_ID }}
           TF_VAR_app_pem_file: ${{ env.APP_PEM_FILE }}
           TF_VAR_app_installation_id: ${{ steps.get_installation_id.outputs.INSTALLATION_ID }}
-          TF_VAR_maroon_oidc_role: ${{ env.MAROON_OIDC_ROLE }}
-          TF_VAR_maroon_state_bucket: ${{ env.MAROON_STATE_BUCKET }}
+          TF_VAR_infra_state_bucket: ${{ env.INFRA_STATE_BUCKET }}
+          TF_VAR_infra_oidc_role: ${{ env.INFRA_OIDC_ROLE }}
           TF_VAR_oidc_role_common_name: ${{ env.OIDC_ROLE_COMMON_NAME }}
         run: terraform apply -input=false tfplan

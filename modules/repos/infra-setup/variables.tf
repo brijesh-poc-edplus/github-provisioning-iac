@@ -3,6 +3,12 @@ variable "bucket_name" {
   type        = string
 }
 
+variable "region" {
+  description = "AWS region to deploy resources"
+  type        = string
+  default     = "us-west-2"
+}
+
 variable "enable_spa_redirect" {
   type    = bool
   default = false
