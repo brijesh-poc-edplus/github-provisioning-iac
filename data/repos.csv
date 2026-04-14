@@ -1,1 +1,2 @@
 name,visibility,description,frontend,iac_setup,aws-nonprod,aws-nonprod-name,aws-prod,aws-prod-name,budget-info,jira-board,portfolio-detail
+frontend-test-repo,public,Test-Scenario-1,true,true,nonprod-frontend-acc,345023451233,prod-frontend-acc,345023451234,CS3333-RT3211,url-to-jira-board,optional
