@@ -1,2 +1,2 @@
 name,visibility,description,frontend,iac_setup,aws-nonprod,aws-nonprod-name,aws-prod,aws-prod-name,budget-info,jira-board,portfolio-detail
-my-first-test-repo,public,My first provisioned repo,true,false,,,,,,,
+my-first-test-repo,public,My first provisioned repo,true,true,nonprod-personal,874244694062,prod-personal,874244694062,BUDGET-001,,,
