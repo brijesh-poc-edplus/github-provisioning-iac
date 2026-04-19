@@ -120,18 +120,20 @@ resource "github_repository" "repos" {
 
 # ---------------------------
 # Custom properties (depends on repo)
+# NOTE: Requires custom property definitions to exist at org level first.
+# Disabled for PoC — re-enable after creating org-level property definitions.
 # ---------------------------
-resource "github_repository_custom_property" "accounts-details" {
-  for_each       = local.custom_properties_map
-  repository     = each.value.repo
-  property_name  = each.value.name
-  property_value = [each.value.property]
-  property_type  = "string"
-  depends_on     = [github_repository.repos]
-  lifecycle {
-    ignore_changes = [property_value]
-  }
-}
+# resource "github_repository_custom_property" "accounts-details" {
+#   for_each       = local.custom_properties_map
+#   repository     = each.value.repo
+#   property_name  = each.value.name
+#   property_value = [each.value.property]
+#   property_type  = "string"
+#   depends_on     = [github_repository.repos]
+#   lifecycle {
+#     ignore_changes = [property_value]
+#   }
+# }
 
 # ---------------------------
 # Create canonical files on MAIN only (single commit per repo)
