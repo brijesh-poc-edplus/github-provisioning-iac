@@ -17,6 +17,7 @@ env:
   INFRA_STATE_BUCKET: ${{ secrets.INFRA_STATE_BUCKET}}
   INFRA_OIDC_ROLE: ${{ secrets.INFRA_OIDC_ROLE }}
   OIDC_ROLE_COMMON_NAME: ${{ secrets.OIDC_ROLE_COMMON_NAME }}
+  GH_APP_SLUG: ${{ secrets.GH_APP_SLUG }}
 
 jobs:
   plan:
@@ -76,6 +77,7 @@ jobs:
           TF_VAR_infra_state_bucket: ${{ env.INFRA_STATE_BUCKET }}
           TF_VAR_infra_oidc_role: ${{ env.INFRA_OIDC_ROLE }}
           TF_VAR_oidc_role_common_name: ${{ env.OIDC_ROLE_COMMON_NAME }}
+          TF_VAR_github_app_slug: ${{ env.GH_APP_SLUG }}
         run: terraform plan -out=tfplan
 
       - name: Save plan for review
@@ -145,4 +147,5 @@ jobs:
           TF_VAR_infra_state_bucket: ${{ env.INFRA_STATE_BUCKET }}
           TF_VAR_infra_oidc_role: ${{ env.INFRA_OIDC_ROLE }}
           TF_VAR_oidc_role_common_name: ${{ env.OIDC_ROLE_COMMON_NAME }}
+          TF_VAR_github_app_slug: ${{ env.GH_APP_SLUG }}
         run: terraform apply -input=false tfplan

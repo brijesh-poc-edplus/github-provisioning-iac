@@ -32,3 +32,8 @@ variable "oidc_role_common_name" {
   description = "Common name for OIDC roles"
   type        = string
 }
+
+variable "github_app_slug" {
+  description = "Slug (URL-friendly name) of the GitHub App used by Terraform"
+  type        = string
+}
