@@ -94,7 +94,7 @@ jobs:
           terraform init -reconfigure \
             -backend-config="bucket=${{ env.INFRA_STATE_BUCKET }}" \
             -backend-config="key=${{ steps.compose.outputs.STATE_KEY }}" \
-            -backend-config="region=us-west-2" \
+            -backend-config="region=us-east-1" \
             -backend-config="encrypt=true"
 
       - name: Terraform plan (save binary plan)
@@ -149,7 +149,7 @@ jobs:
           terraform init -reconfigure \
             -backend-config="bucket=${{ env.INFRA_STATE_BUCKET }}" \
             -backend-config="key=${{ needs.plan.outputs.state_key }}" \
-            -backend-config="region=us-west-2" \
+            -backend-config="region=us-east-1" \
             -backend-config="encrypt=true"
 
       - name: Terraform apply
