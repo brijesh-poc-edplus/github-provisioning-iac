@@ -1,2 +1,3 @@
 name,visibility,description,frontend,iac_setup,aws-nonprod,aws-nonprod-name,aws-prod,aws-prod-name,budget-info,jira-board,portfolio-detail
 agent-demo-repo,public,Agent demo repo,true,false,,,,,BUDGET-001,https://jira.example.com,PoC
+agent-form-demo-repo,public,Repo created through agent issue form,true,false,,,,,BUDGET-001,https://jira.example.com,
