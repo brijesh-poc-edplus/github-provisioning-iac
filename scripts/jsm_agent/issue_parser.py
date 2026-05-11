@@ -120,7 +120,7 @@ def _empty_to_default(value: Any) -> str:
     if value is None:
         return ""
     text = str(value).strip()
-    return "" if text == "_No response_" else text
+    return "" if text in {"_No response_", "None"} else text
 
 
 def _split_csv(value: str) -> list[str]:
