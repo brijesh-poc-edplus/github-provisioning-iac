@@ -1,10 +1,6 @@
-import os
 import subprocess
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
-
-import requests
 
 from csv_manager import CsvChange
 
@@ -22,37 +18,36 @@ def create_pull_request(
     changes: list[CsvChange],
     touched_files: set[Path],
 ) -> PullRequest:
-    branch = f"jsm-agent/repo-requests-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
+    branch_suffix = "-".join(str(number) for number in issue_numbers)
+    branch = f"jsm-agent/repo-requests-{branch_suffix}"
     title = f"Process repository request{'s' if len(issue_numbers) != 1 else ''}: {', '.join(f'#{n}' for n in issue_numbers)}"
     body = build_pr_body(issue_numbers, changes)
 
-    _run(["git", "checkout", "-b", branch], repo_root)
     _run(["git", "config", "user.name", "github-provisioning-agent"], repo_root)
     _run(["git", "config", "user.email", "github-provisioning-agent@users.noreply.github.com"], repo_root)
+    _run(["git", "checkout", "-B", branch], repo_root)
 
     paths = sorted(str(path.relative_to(repo_root)) for path in touched_files)
     _run(["git", "add", *paths], repo_root)
     _run(["git", "commit", "-m", title], repo_root)
-    _run(["git", "push", "--set-upstream", "origin", branch], repo_root)
+    _run(["git", "push", "--force-with-lease", "--set-upstream", "origin", branch], repo_root)
 
-    github_repository = os.environ["GITHUB_REPOSITORY"]
-    token = os.environ["GITHUB_TOKEN"]
-    default_branch = os.environ.get("DEFAULT_BRANCH", "main")
-
-    response = requests.post(
-        f"https://api.github.com/repos/{github_repository}/pulls",
-        headers=_headers(token),
-        json={
-            "title": title,
-            "head": branch,
-            "base": default_branch,
-            "body": body,
-        },
-        timeout=30,
+    pr_url = _run_with_output(
+        [
+            "gh",
+            "pr",
+            "create",
+            "--title",
+            title,
+            "--body",
+            body,
+            "--head",
+            branch,
+        ],
+        repo_root,
     )
-    response.raise_for_status()
-    payload = response.json()
-    return PullRequest(number=payload["number"], url=payload["html_url"], branch=branch)
+    pr_number = int(pr_url.rstrip("/").split("/")[-1])
+    return PullRequest(number=pr_number, url=pr_url, branch=branch)
 
 
 def build_pr_body(issue_numbers: list[int], changes: list[CsvChange]) -> str:
@@ -92,13 +87,10 @@ def build_pr_body(issue_numbers: list[int], changes: list[CsvChange]) -> str:
     return "\n".join(lines)
 
 
-def _headers(token: str) -> dict[str, str]:
-    return {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
-
-
 def _run(command: list[str], cwd: Path) -> None:
     subprocess.run(command, cwd=cwd, check=True)
+
+
+def _run_with_output(command: list[str], cwd: Path) -> str:
+    completed = subprocess.run(command, cwd=cwd, check=True, capture_output=True, text=True)
+    return completed.stdout.strip()
