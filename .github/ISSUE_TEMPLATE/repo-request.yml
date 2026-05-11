@@ -1,0 +1,167 @@
+name: GitHub Repository Request
+description: Request a new repository or update access/IaC details for an existing repository.
+title: "[Repo Request] "
+labels: ["repo-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form as the PoC stand-in for the Jira Service Management GitHub Repository Request form.
+        The daily agent reads open issues with the `repo-request` label and raises a CSV update PR.
+
+  - type: dropdown
+    id: repo_type
+    attributes:
+      label: Is this a new or existing repo?
+      options:
+        - New
+        - Existing
+    validations:
+      required: true
+
+  - type: input
+    id: repo_name
+    attributes:
+      label: Repository name
+      description: Lowercase letters, numbers, and hyphens only.
+      placeholder: my-new-service
+    validations:
+      required: true
+
+  - type: dropdown
+    id: visibility
+    attributes:
+      label: Repository visibility
+      options:
+        - private
+        - internal
+        - public
+    validations:
+      required: true
+
+  - type: input
+    id: description
+    attributes:
+      label: Repository description
+      placeholder: Static frontend for the student dashboard
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frontend
+    attributes:
+      label: Is this a frontend/static site repo?
+      options:
+        - "Yes"
+        - "No"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: iac_setup
+    attributes:
+      label: Do you require an S3 and CloudFront setup for your project?
+      description: Choose Yes when Terraform should inject the per-repo AWS static hosting stack.
+      options:
+        - "No"
+        - "Yes"
+        - "AWS account not set up"
+    validations:
+      required: true
+
+  - type: input
+    id: aws_nonprod
+    attributes:
+      label: AWS NonProd Account
+      description: Use `account-name (123456789012)`. Leave blank if IaC setup is not required.
+      placeholder: nonprod-personal (874244694062)
+    validations:
+      required: false
+
+  - type: input
+    id: aws_prod
+    attributes:
+      label: AWS Prod Account
+      description: Use `account-name (123456789012)`. Leave blank if IaC setup is not required.
+      placeholder: prod-personal (874244694062)
+    validations:
+      required: false
+
+  - type: input
+    id: budget_info
+    attributes:
+      label: Budget information
+      description: Cost center, program code, grant code, or gift code.
+      placeholder: CC1088-PG16661
+    validations:
+      required: true
+
+  - type: input
+    id: jira_board
+    attributes:
+      label: Jira board URL
+      placeholder: https://asudev.jira.com/jira/software/c/projects/ABC/boards/123
+    validations:
+      required: true
+
+  - type: input
+    id: portfolio_detail
+    attributes:
+      label: Portfolio detail
+      description: Optional portfolio or product ownership detail.
+      placeholder: Student Experience
+    validations:
+      required: false
+
+  - type: input
+    id: github_users
+    attributes:
+      label: GitHub username(s) for direct repo access
+      description: Comma-separated usernames. Leave blank if access is only through a team.
+      placeholder: octocat, monalisa
+    validations:
+      required: false
+
+  - type: dropdown
+    id: user_access
+    attributes:
+      label: Direct user access level
+      options:
+        - Read
+        - Triage
+        - Write
+        - Maintain
+        - Admin
+    validations:
+      required: false
+
+  - type: input
+    id: github_team
+    attributes:
+      label: GitHub team name
+      description: Optional team that should be created or granted repo access.
+      placeholder: student-dashboard-team
+    validations:
+      required: false
+
+  - type: dropdown
+    id: team_access
+    attributes:
+      label: Team access level
+      options:
+        - Read
+        - Triage
+        - Write
+        - Maintain
+        - Admin
+    validations:
+      required: false
+
+  - type: input
+    id: code_owners
+    attributes:
+      label: Code owner username(s)
+      description: Comma-separated usernames to add to `.github/CODEOWNERS` for `main`.
+      placeholder: octocat, monalisa
+    validations:
+      required: false
