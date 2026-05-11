@@ -50,8 +50,8 @@ def parse_issue_body(body: str) -> dict[str, Any]:
     normalized["github_users"] = _split_csv(normalized.get("github_users", ""))
     normalized["code_owners"] = _split_csv(normalized.get("code_owners", ""))
     normalized["github_team"] = _slug(normalized.get("github_team", ""))
-    normalized["user_access"] = _title(normalized.get("user_access", "Write"))
-    normalized["team_access"] = _title(normalized.get("team_access", "Write"))
+    normalized["user_access"] = _title_or_default(normalized.get("user_access"), "Write")
+    normalized["team_access"] = _title_or_default(normalized.get("team_access"), "Write")
     normalized["portfolio_detail"] = normalized.get("portfolio_detail", "")
     normalized["budget_info"] = normalized.get("budget_info", "")
     normalized["jira_board"] = normalized.get("jira_board", "")
@@ -138,6 +138,11 @@ def _iac_to_bool(value: str) -> bool:
 def _title(value: str) -> str:
     value = _empty_to_default(value)
     return value[:1].upper() + value[1:].lower() if value else ""
+
+
+def _title_or_default(value: str | None, default: str) -> str:
+    titled = _title(value or "")
+    return titled if titled else default
 
 
 def _slug(value: str) -> str:
